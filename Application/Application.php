@@ -64,18 +64,18 @@ class Application
 
     private function getTableHeadersData(): array
     {
-        return ['Gemeente', 'Cum. Besmettingen', 'Cum. Ziekenhuis Opn.', 'Cum. overleden'];
+        return ['Gemeente', 'Besmettingen', 'Ziekenhuis Opn.', 'Cum. overleden'];
     }
 
     private function getTableHeadersDiff(): array
     {
-        return ['Gemeente', ' Stijging totaal besmettingen', 'Stijging opnames', 'Toename overlijden'];
+        return ['Gemeente', ' Besmettingen', 'Opnames', 'Overlijden'];
     }
 
     private function calculateDiff(array $dataOfDate, array $dataOfDayBefore)
     {
         $changesPerCommunity = [];
-        $this->output[] = 'De verschillen tussen ' . $this->date->format('d-m-Y') . ' en de vorige dag.';
+        $this->output[] = '<em>De verschillen tussen ' . $this->date->format('d-m-Y') . ' en de vorige dag.</em>';
         foreach ($dataOfDayBefore as $dayBefore) {
             $dayBeforeData = explode(';', $dayBefore);
             foreach ($dataOfDate as $currentDay) {
@@ -112,7 +112,7 @@ class Application
 
     private function collectDataAndAddToTable(DateTime $date): array
     {
-        $this->output[] = 'Cijfers voor: ' . $date->format('d-m-Y');
+        $this->output[] = 'Cijfers voor:<em> ' . $date->format('d-m-Y') . '</em>';
         $dataOfDate = $this->queryProcessor->getEntriesForCommunities($date);
         $communitieGroups = $this->config->getCommunityGroups();
         foreach( $communitieGroups as $group => $communitieGroup ) {
@@ -125,7 +125,7 @@ class Application
                     }
                 }
             }
-            $this->output[] = "Cijfers voor {$group}:";
+            $this->output[] = "<em>Regio {$group}:</em>";
             sort($dataOfGroup);
             $dataOfGroup = $this->calculateTotals($dataOfGroup);
             $this->output[] = $this->tableGenerator->generateTable($this->getTableHeadersData(), $dataOfGroup);

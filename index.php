@@ -23,11 +23,10 @@ if ($process) {
     $app = new Application\Application(CORONANUMBERS_URL, $download, $day);
     $app->processRequest($day);
     $messages = $app->getOutput();
-    if ($messages) {
-        foreach ($messages as $message) {
-            $html .= $message . '<br>';
-        }
+    if ($messages) foreach ($messages as $message) {
+        $html .= $message . '<br>';
     }
+
 }
 $formBuilder = new Utils\FormBuilder();
 $form = $formBuilder->getInPutForm($html);
