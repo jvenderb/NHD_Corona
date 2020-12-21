@@ -1,8 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Corona\Utils;
-
+namespace Corona\Application;
+use Corona\Utils\HttpClient;
+use Corona\Utils\QueryProcessorCoronaNumbers;
+use Corona\Utils\TableGenerator;
 use DateTime;
 
 /**
@@ -23,6 +25,10 @@ class Application
     private array $collectedData;
     /** @var TableGenerator $tableGenerator */
     private TableGenerator $tableGenerator;
+    /** @var QueryProcessorCoronaNumbers */
+    private QueryProcessorCoronaNumbers $queryProcessor;
+    /** @var Config */
+    private Config $config;
 
     public function __construct(string $url, bool $download, string $day)
     {
@@ -31,7 +37,9 @@ class Application
         $this->download = $download;
         $this->date = new DateTime($day);
         $this->collectedData = [];
-        $this->tableGenerator = new namespace\TableGenerator();
+        $this->tableGenerator = new TableGenerator();
+        $this->queryProcessor = new QueryProcessorCoronaNumbers();
+        $this->config = new Config();
     }
 
     public function processRequest()
@@ -48,21 +56,9 @@ class Application
         } else {
             $this->output[] = 'Geen nieuwe cijfers gedownload.';
         }
-        $this->output[] = 'Ophalen cijfers voor: ' . $this->date->format('d-m-Y');
-        $queryProcessor = new QueryProcessorCoronaNumbers();
-        $dataOfDate = $queryProcessor->getEntriesForCommunities($this->date);
-        if (!$dataOfDate) {
-            $this->output[] = 'Geen cijfers beschikbaar voor: ' . $this->date->format('d-m-Y');
-            return;
-        }
-        $table = $this->tableGenerator->generateTable($this->getTableHeadersData(), $dataOfDate);
-        $this->output[] = $table;
-        $dayBefore = new DateTime($this->date->format('d-m-Y'));
-        $dayBefore->modify('-1 day');
-        $this->output[] = 'Ophalen cijfers voor: ' . $dayBefore->format('d-m-Y');
-        $dataOfDayBefore = $queryProcessor->getEntriesForCommunities($dayBefore);
-        $table = $this->tableGenerator->generateTable($this->getTableHeadersData(), $dataOfDayBefore);
-        $this->output[] = $table;
+        $dataOfDate = $this->collectDataAndAddToTable($this->date);
+        $dayBefore = (new DateTime($this->date->format('d-m-Y')))->modify('-1 day');
+        $dataOfDayBefore = $this->collectDataAndAddToTable($dayBefore);
         $this->calculateDiff($dataOfDate, $dataOfDayBefore);
     }
 
@@ -100,7 +96,7 @@ class Application
         }
         $table = $this->tableGenerator->generateTable($this->getTableHeadersDiff(), $changesPerCommunity);
         $this->output[] = $table;
-        $this->output[] = 'Overall cijfers Stijging totaal besmettingen: ' . strval($newTotalOverAll) . ' Stijging opnames: ' . strval($newHospitalOverAll) . ' Toename overlijden: ' . strval($newDeathOverAll);
+        $this->output[] = 'Overall cijfers: stijging totaal besmettingen: ' . strval($newTotalOverAll) . ', stijging opnames: ' . strval($newHospitalOverAll) . ', toename overlijden: ' . strval($newDeathOverAll);
     }
 
     private function downloadFile(): bool
@@ -118,5 +114,27 @@ class Application
     public function getOutput(): array
     {
         return $this->output;
+    }
+
+    private function collectDataAndAddToTable(DateTime $date): array
+    {
+        $this->output[] = 'Cijfers voor: ' . $date->format('d-m-Y');
+        $dataOfDate = $this->queryProcessor->getEntriesForCommunities($date);
+        $communitieGroups = $this->config->getCommunityGroups();
+        foreach( $communitieGroups as $group => $communitieGroup ) {
+            $dataOfGroup = [];
+            if($dataOfDate) {
+                foreach ($dataOfDate as $dataLine) {
+                    $dataItems = explode(';', $dataLine);
+                    if( in_array( $dataItems[0], $communitieGroup )) {
+                        $dataOfGroup[] = $dataLine;
+                    }
+                }
+            }
+            $this->output[] = "Cijfers voor {$group}:";
+            $this->output[] = $this->tableGenerator->generateTable($this->getTableHeadersData(), $dataOfGroup);
+        }
+
+        return $dataOfDate;
     }
 }

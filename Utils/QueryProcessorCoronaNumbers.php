@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
-
 namespace Corona\Utils;
 
+use Corona\Application\Config;
 use DateTime;
 use Exception;
 
@@ -13,6 +13,13 @@ class QueryProcessorCoronaNumbers
     private DateTime $date;
     /** @var array $collectedData */
     private array $collectedData;
+    /** @var Config */
+    private Config $config;
+
+    public function __construct()
+    {
+        $this->config = new Config();
+    }
 
     public function getEntriesForCommunities(DateTime $date): array
     {
@@ -27,6 +34,9 @@ class QueryProcessorCoronaNumbers
                 $this->output[] = "Error: unexpected fgets() fail.";
             }
             fclose($handle);
+        }
+        if( !$this->collectedData) {
+            $this->collectedData[] = 'Niet beschikbaar;Niet beschikbaar;Niet beschikbaar;Niet beschikbaar';
         }
         return $this->collectedData;
     }
@@ -44,14 +54,6 @@ class QueryProcessorCoronaNumbers
         }
     }
 
-    private function getCommunities(): array
-    {
-        $communities['ALK'] = ['Alkmaar', 'Bergen (NH.)', 'Castricum', 'Heerhugowaard', 'Heiloo', 'Langedijk'];
-        $communities['KOP'] = ['Den Helder', 'Hollands Kroon', 'Schagen', 'Texel'];
-        $communities['WEF'] = ['Hoorn', 'Drechterland', 'Enkhuizen', 'Koggenland', 'Medemblik', 'Opmeer', 'Stede Broec'];
-        return $communities;
-    }
-
     private function isSameDay(DateTime $target): bool
     {
         $targetDate = $target->format('d-m-Y');
@@ -61,7 +63,7 @@ class QueryProcessorCoronaNumbers
 
     private function requestedCommunity($community): bool
     {
-        $communityGroups = $this->getCommunities();
+        $communityGroups = $this->config->getCommunityGroups();
         foreach ($communityGroups as $communityGroup) {
             if (in_array($community, $communityGroup)) {
                 return true;
