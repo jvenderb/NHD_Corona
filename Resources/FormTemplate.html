@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lees en verwerk Corana cijfers per gemeente/regio</title>
+</head>
+<body>
+    <h3>Ophalen en verwerken van de dagelijkse Corona cijfers</h3>
+    <form action="index.php" method="post">
+        <label for="day">Datum: dd-mm-jjjj</label>
+        <input type="date" id="day" name="day"><br>
+        <label for="download">Download nieuwe cijfers:</label>
+        <input type="checkbox" name="download" value="download"><br>
+        <input type="submit" name="process" value="Submit"><br>
+    </form>
+    <p><!--MESSAGES--></p>
+</body>
+</html>
