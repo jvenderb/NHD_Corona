@@ -64,7 +64,7 @@ class Application
 
     private function getTableHeadersData(): array
     {
-        return ['Gemeente', 'Tot. Besmettingen', 'Ziekenhuis Opn.', 'Tot. overleden'];
+        return ['Gemeente', 'Cum. Besmettingen', 'Cum. Ziekenhuis Opn.', 'Cum. overleden'];
     }
 
     private function getTableHeadersDiff(): array
@@ -74,9 +74,6 @@ class Application
 
     private function calculateDiff(array $dataOfDate, array $dataOfDayBefore)
     {
-        $newTotalOverAll = 0;
-        $newHospitalOverAll = 0;
-        $newDeathOverAll = 0;
         $changesPerCommunity = [];
         $this->output[] = 'De verschillen tussen ' . $this->date->format('d-m-Y') . ' en de vorige dag.';
         foreach ($dataOfDayBefore as $dayBefore) {
@@ -87,16 +84,13 @@ class Application
                     $newTotal = intval($currentDayData[1]) - intval($dayBeforeData[1]);
                     $newHospital = intval($currentDayData[2]) - intval($dayBeforeData[2]);
                     $newDeath = intval($currentDayData[3]) - intval($dayBeforeData[3]);
-                    $newTotalOverAll += $newTotal;
-                    $newHospitalOverAll += $newHospital;
-                    $newDeathOverAll += $newDeath;
-                    $changesPerCommunity[] = $currentDayData[0] . ';' . strval($newTotal) . ';' . strval($newHospital) . ';' . strval($newDeath);
+                    $changesPerCommunity[$currentDayData[0]] = $currentDayData[0] . ';' . strval($newTotal) . ';' . strval($newHospital) . ';' . strval($newDeath);
                 }
             }
         }
-        $table = $this->tableGenerator->generateTable($this->getTableHeadersDiff(), $changesPerCommunity);
-        $this->output[] = $table;
-        $this->output[] = 'Overall cijfers: stijging totaal besmettingen: ' . strval($newTotalOverAll) . ', stijging opnames: ' . strval($newHospitalOverAll) . ', toename overlijden: ' . strval($newDeathOverAll);
+        sort($changesPerCommunity);
+        $changesPerCommunity = $this->calculateTotals($changesPerCommunity);
+        $this->output[] = $this->tableGenerator->generateTable($this->getTableHeadersDiff(), $changesPerCommunity);
     }
 
     private function downloadFile(): bool
@@ -127,14 +121,30 @@ class Application
                 foreach ($dataOfDate as $dataLine) {
                     $dataItems = explode(';', $dataLine);
                     if( in_array( $dataItems[0], $communitieGroup )) {
-                        $dataOfGroup[] = $dataLine;
+                        $dataOfGroup[$dataItems[0]] = $dataLine;
                     }
                 }
             }
             $this->output[] = "Cijfers voor {$group}:";
+            sort($dataOfGroup);
+            $dataOfGroup = $this->calculateTotals($dataOfGroup);
             $this->output[] = $this->tableGenerator->generateTable($this->getTableHeadersData(), $dataOfGroup);
         }
-
         return $dataOfDate;
+    }
+
+    private function calculateTotals( array $data ):array
+    {
+        $total1 = 0;
+        $total2 = 0;
+        $total3 = 0;
+        foreach( $data as $dataLine) {
+            $dataItems = explode(';', $dataLine);
+            $total1 += intval($dataItems[1]);
+            $total2 += intval($dataItems[2]);
+            $total3 += intval($dataItems[3]);
+        }
+        $data[] = "Totaal;{$total1};{$total2};{$total3}";
+        return $data;
     }
 }
