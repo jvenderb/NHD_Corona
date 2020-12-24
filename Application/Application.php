@@ -16,6 +16,7 @@ class Application
     const CONT = 1; // Contamination
     const HOSP = 2; // Hospital admission
     const DESC = 3; // Deceased
+    const CPHD = 4; // Contamination per 100.000
     private array $output;
     private bool $download;
     private DateTime $date;
@@ -54,6 +55,7 @@ class Application
         } else {
             $this->output[] = 'Geen nieuwe cijfers gedownload.';
         }
+        $this->output[] = 'Besmettingen per 100.000 is gebaseerd op het aantal inwoners op 29 september 2020.';
         $this->output[] = '<br>';
         $dataOfDate = $this->collectDataAndAddToTable($this->date);
         if( $this->dayBefore ) {
@@ -74,12 +76,12 @@ class Application
 
     private function getTableHeadersData(): array
     {
-        return ['Gemeente', 'Besmettingen', 'Ziekenhuis Opn.', 'Cum. overleden'];
+        return ['Gemeente', 'Besmettingen', 'Ziekenhuis Opn.', 'Cum. overleden', 'Besmettingen/100.000'];
     }
 
     private function getTableHeadersDiff(): array
     {
-        return ['Gemeente', ' Besmettingen', 'Opnames', 'Overlijden'];
+        return ['Gemeente', ' Besmettingen', 'Opnames', 'Overlijden', 'Besmettingen/100.000'];
     }
 
     private function calculateDiff(array $dataOfDate, array $dataOfDayBefore)
@@ -93,7 +95,9 @@ class Application
                     $newTotal = intval($currentDayData[self::CONT]) - intval($dayBeforeData[self::CONT]);
                     $newHospital = intval($currentDayData[self::HOSP]) - intval($dayBeforeData[self::HOSP]);
                     $newDeath = intval($currentDayData[self::DESC]) - intval($dayBeforeData[self::DESC]);
-                    $changesPerCommunity[$currentDayData[self::COM]] = $currentDayData[self::COM] . ';' . strval($newTotal) . ';' . strval($newHospital) . ';' . strval($newDeath);
+                    $changePerHT = intval($currentDayData[self::CPHD]) - intval($dayBeforeData[self::CPHD]);
+                    $changesPerCommunity[$currentDayData[self::COM]] =
+                        $currentDayData[self::COM] . ';' . strval($newTotal) . ';' . strval($newHospital) . ';' . strval($newDeath) . ';' . strval($changePerHT);
                 }
             }
         }
@@ -116,7 +120,9 @@ class Application
 
     private function collectDataAndAddToTable(DateTime $date): array
     {
+        $extendedData = [];
         $this->output[] = 'Cijfers voor:<em> ' . $date->format('d-m-Y') . '</em><br>';
+        $citizensPerCommunity = $this->queryProcessor->getCitizensPerCommunity();
         $dataOfDate = $this->queryProcessor->getEntriesForCommunities($date);
         $communitieGroups = $this->config->getCommunityGroups();
         foreach( $communitieGroups as $group => $communitieGroup ) {
@@ -125,7 +131,11 @@ class Application
                 foreach ($dataOfDate as $dataLine) {
                     $dataItems = explode(';', $dataLine);
                     if( in_array( $dataItems[self::COM], $communitieGroup )) {
-                        $dataOfGroup[$dataItems[self::COM]] = $dataLine;
+                        $perHundredThousend = $this->calcContaminationPerHundredThousend(
+                            intval($dataItems[self::CONT]), $citizensPerCommunity[$dataItems[self::COM]]);
+                        $extendedDataLine = $dataLine.';'.strval($perHundredThousend);
+                        $dataOfGroup[$dataItems[self::COM]] = $extendedDataLine;
+                        $extendedData[] = $extendedDataLine;
                     }
                 }
             }
@@ -134,7 +144,12 @@ class Application
             $dataOfGroup = $this->calculateTotals($dataOfGroup);
             $this->output[] = $this->tableGenerator->generateTable($this->getTableHeadersData(), $dataOfGroup);
         }
-        return $dataOfDate;
+        return $extendedData;
+    }
+
+    private function calcContaminationPerHundredThousend( int $contamination, int $citizens ): int
+    {
+        return intval($contamination / $citizens * 100000);
     }
 
     private function calculateTotals( array $data ):array
@@ -142,13 +157,14 @@ class Application
         $total1 = 0;
         $total2 = 0;
         $total3 = 0;
+        $total4 = '-';
         foreach( $data as $dataLine) {
             $dataItems = explode(';', $dataLine);
             $total1 += intval($dataItems[self::CONT]);
             $total2 += intval($dataItems[self::HOSP]);
             $total3 += intval($dataItems[self::DESC]);
         }
-        $data[] = "Totaal;{$total1};{$total2};{$total3}";
+        $data[] = "Totaal;{$total1};{$total2};{$total3};{$total4}";
         return $data;
     }
 }

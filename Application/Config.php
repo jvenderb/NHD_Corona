@@ -20,6 +20,11 @@ class Config
 
     public function getDownloadFile():string
     {
-        return '/Users/Shared/Temp/CoronaNumbers.csv';
+        return '/Users/Shared/Temp/NHD/CoronaNumbers.csv';
+    }
+
+    public function getCitizensPerCommunity(): string
+    {
+        return '/Users/Shared/Temp/NHD/Inw202009.csv';
     }
 }
