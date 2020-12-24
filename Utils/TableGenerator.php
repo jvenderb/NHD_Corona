@@ -1,9 +1,11 @@
 <?php
 declare(strict_types=1);
-
 namespace Corona\Utils;
+
 /**
- * Creates a table in HTML Format.
+ * Class TableGenerator
+ * @package Corona\Utils
+ * Responsibility: Generate a table that can be used in a HTML document.
  */
 class TableGenerator
 {

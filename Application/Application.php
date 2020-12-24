@@ -1,14 +1,16 @@
 <?php
 declare(strict_types=1);
-
 namespace Corona\Application;
+
 use Corona\Utils\HttpClient;
 use Corona\Utils\QueryProcessorCoronaNumbers;
 use Corona\Utils\TableGenerator;
 use DateTime;
 
 /**
- * Handles the request and generates all data.
+ * Class Application
+ * @package Corona\Application
+ * Responsibility: Handles the request and generates all data.
  */
 class Application
 {
@@ -125,24 +127,24 @@ class Application
         $citizensPerCommunity = $this->queryProcessor->getCitizensPerCommunity();
         $dataOfDate = $this->queryProcessor->getEntriesForCommunities($date);
         $communitieGroups = $this->config->getCommunityGroups();
-        foreach( $communitieGroups as $group => $communitieGroup ) {
-            $dataOfGroup = [];
+        foreach( $communitieGroups as $groupName => $communitiesByGroup ) {
+            $dataByGroup = [];
             if($dataOfDate) {
                 foreach ($dataOfDate as $dataLine) {
                     $dataItems = explode(';', $dataLine);
-                    if( in_array( $dataItems[self::COM], $communitieGroup )) {
+                    if( in_array( $dataItems[self::COM], $communitiesByGroup )) {
                         $perHundredThousend = $this->calcContaminationPerHundredThousend(
                             intval($dataItems[self::CONT]), $citizensPerCommunity[$dataItems[self::COM]]);
                         $extendedDataLine = $dataLine.';'.strval($perHundredThousend);
-                        $dataOfGroup[$dataItems[self::COM]] = $extendedDataLine;
+                        $dataByGroup[$dataItems[self::COM]] = $extendedDataLine;
                         $extendedData[] = $extendedDataLine;
                     }
                 }
             }
-            $this->output[] = "<em>Regio {$group}:</em>";
-            sort($dataOfGroup);
-            $dataOfGroup = $this->calculateTotals($dataOfGroup);
-            $this->output[] = $this->tableGenerator->generateTable($this->getTableHeadersData(), $dataOfGroup);
+            $this->output[] = "<em>Regio {$groupName}:</em>";
+            sort($dataByGroup);
+            $dataByGroup = $this->calculateTotals($dataByGroup);
+            $this->output[] = $this->tableGenerator->generateTable($this->getTableHeadersData(), $dataByGroup);
         }
         return $extendedData;
     }

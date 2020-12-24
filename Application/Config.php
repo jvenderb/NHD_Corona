@@ -2,7 +2,11 @@
 declare(strict_types=1);
 namespace Corona\Application;
 
-
+/**
+ * Class Config
+ * @package Corona\Application
+ * Responsibility: Provide configuration settings.
+ */
 class Config
 {
     public function getCommunityGroups(): array
