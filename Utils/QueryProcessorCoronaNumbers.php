@@ -1,12 +1,16 @@
 <?php
 declare(strict_types=1);
-
 namespace Corona\Utils;
 
 use Corona\Application\Config;
 use DateTime;
 use Exception;
 
+/**
+ * Class QueryProcessorCoronaNumbers
+ * @package Corona\Utils
+ * Responsibility: Extracts data and processes it.
+ */
 class QueryProcessorCoronaNumbers
 {
     private DateTime $date;
@@ -71,7 +75,7 @@ class QueryProcessorCoronaNumbers
         return $targetDate == $sourceDate;
     }
 
-    private function requestedCommunity($community): bool
+    private function requestedCommunity(string $community): bool
     {
         $communityGroups = $this->config->getCommunityGroups();
         foreach ($communityGroups as $communityGroup) {

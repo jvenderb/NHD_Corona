@@ -1,10 +1,15 @@
 <?php
 declare(strict_types=1);
-
 namespace Corona\Utils;
 
 /**
  * Can be used to download / upload content from the internet.
+ */
+
+/**
+ * Class HttpClient
+ * @package Corona\Utils
+ * Responsibility: Download / upload content from the internet.
  */
 class HttpClient
 {
@@ -18,7 +23,7 @@ class HttpClient
         $this->curlResource = curl_init($url);
     }
 
-    public function createDownloadFile($fileName)
+    public function createDownloadFile(string $fileName)
     {
         $this->filePointer = fopen($fileName, "w");
     }
