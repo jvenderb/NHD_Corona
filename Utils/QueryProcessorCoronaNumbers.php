@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+
 namespace Corona\Utils;
 
 use Corona\Application\Config;
@@ -8,7 +9,6 @@ use Exception;
 
 class QueryProcessorCoronaNumbers
 {
-    const NUMBER_FILE = '/Users/Shared/Temp/CoronaNumbers.csv';
     private DateTime $date;
     private array $collectedData;
     private Config $config;
@@ -22,7 +22,7 @@ class QueryProcessorCoronaNumbers
     {
         $this->collectedData = [];
         $this->date = $date;
-        $handle = fopen(self::NUMBER_FILE, 'r');
+        $handle = fopen($this->config->getDownloadFile(), 'r');
         if ($handle) {
             while (($line = fgets($handle)) !== false) {
                 $this->processLine($line);
@@ -32,10 +32,23 @@ class QueryProcessorCoronaNumbers
             }
             fclose($handle);
         }
-        if( !$this->collectedData) {
+        if (!$this->collectedData) {
             $this->collectedData[] = 'Niet beschikbaar;Niet beschikbaar;Niet beschikbaar;Niet beschikbaar';
         }
         return $this->collectedData;
+    }
+
+    public function getCitizensPerCommunity(): array
+    {
+        $result = [];
+        $handle = fopen($this->config->getCitizensPerCommunity(), 'r');
+        if ($handle) {
+            while (($line = fgets($handle)) !== false) {
+                $dataItem = explode(';', $line);
+                $result[$dataItem[0]] = intval($dataItem[1]);
+            }
+        }
+        return $result;
     }
 
     private function processLine(string $line)
