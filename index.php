@@ -14,13 +14,13 @@ require_once '/Users/jvenderb/phpStormProjects/NHD_Corona/Utils/TableGenerator.p
 require_once '/Users/jvenderb/phpStormProjects/NHD_Corona/Application/Application.php';
 require_once '/Users/jvenderb/phpStormProjects/NHD_Corona/Application/Config.php';
 
-define('CORONANUMBERS_URL', 'https://data.rivm.nl/covid-19/COVID-19_aantallen_gemeente_cumulatief.csv');
 $download = isset($_POST['download']);
 $day = $_POST['day'] ?? '';
 $process = $_POST['process'] ?? false;
+$dayBefore = isset($_POST['daybefore']);
 $html = '';
 if ($process) {
-    $app = new Application\Application(CORONANUMBERS_URL, $download, $day);
+    $app = new Application\Application($day, $download, $dayBefore);
     $app->processRequest($day);
     $messages = $app->getOutput();
     if ($messages) foreach ($messages as $message) {

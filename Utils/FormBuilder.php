@@ -8,7 +8,6 @@ namespace Corona\Utils;
 class FormBuilder
 {
     const TEMPLATE_FILE = '/Users/jvenderb/phpStormProjects/NHD_Corona/Resources/FormTemplate.html';
-    /** @var $form string */
     private string $form;
 
 
