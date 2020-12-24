@@ -9,11 +9,8 @@ use Exception;
 class QueryProcessorCoronaNumbers
 {
     const NUMBER_FILE = '/Users/Shared/Temp/CoronaNumbers.csv';
-    /** @var DateTime $date */
     private DateTime $date;
-    /** @var array $collectedData */
     private array $collectedData;
-    /** @var Config */
     private Config $config;
 
     public function __construct()

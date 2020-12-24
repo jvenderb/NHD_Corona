@@ -12,4 +12,14 @@ class Config
         $communities['WEF'] = [ 'Drechterland', 'Enkhuizen', 'Hoorn', 'Koggenland', 'Medemblik', 'Opmeer', 'Stede Broec'];
         return $communities;
     }
+
+    public function getDownloadUrl():string
+    {
+        return 'https://data.rivm.nl/covid-19/COVID-19_aantallen_gemeente_cumulatief.csv';
+    }
+
+    public function getDownloadFile():string
+    {
+        return '/Users/Shared/Temp/CoronaNumbers.csv';
+    }
 }
