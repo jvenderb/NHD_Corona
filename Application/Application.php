@@ -12,6 +12,10 @@ use DateTime;
  */
 class Application
 {
+    const COM = 0; // Community
+    const CONT = 1; // Contamination
+    const HOSP = 2; // Hospital admission
+    const DESC = 3; // Deceased
     private array $output;
     private bool $download;
     private DateTime $date;
@@ -85,11 +89,11 @@ class Application
             $dayBeforeData = explode(';', $dayBefore);
             foreach ($dataOfDate as $currentDay) {
                 $currentDayData = explode(';', $currentDay);
-                if ($currentDayData[0] == $dayBeforeData[0]) {
-                    $newTotal = intval($currentDayData[1]) - intval($dayBeforeData[1]);
-                    $newHospital = intval($currentDayData[2]) - intval($dayBeforeData[2]);
-                    $newDeath = intval($currentDayData[3]) - intval($dayBeforeData[3]);
-                    $changesPerCommunity[$currentDayData[0]] = $currentDayData[0] . ';' . strval($newTotal) . ';' . strval($newHospital) . ';' . strval($newDeath);
+                if ($currentDayData[self::COM] == $dayBeforeData[self::COM]) {
+                    $newTotal = intval($currentDayData[self::CONT]) - intval($dayBeforeData[self::CONT]);
+                    $newHospital = intval($currentDayData[self::HOSP]) - intval($dayBeforeData[self::HOSP]);
+                    $newDeath = intval($currentDayData[self::DESC]) - intval($dayBeforeData[self::DESC]);
+                    $changesPerCommunity[$currentDayData[self::COM]] = $currentDayData[self::COM] . ';' . strval($newTotal) . ';' . strval($newHospital) . ';' . strval($newDeath);
                 }
             }
         }
@@ -120,8 +124,8 @@ class Application
             if($dataOfDate) {
                 foreach ($dataOfDate as $dataLine) {
                     $dataItems = explode(';', $dataLine);
-                    if( in_array( $dataItems[0], $communitieGroup )) {
-                        $dataOfGroup[$dataItems[0]] = $dataLine;
+                    if( in_array( $dataItems[self::COM], $communitieGroup )) {
+                        $dataOfGroup[$dataItems[self::COM]] = $dataLine;
                     }
                 }
             }
@@ -140,9 +144,9 @@ class Application
         $total3 = 0;
         foreach( $data as $dataLine) {
             $dataItems = explode(';', $dataLine);
-            $total1 += intval($dataItems[1]);
-            $total2 += intval($dataItems[2]);
-            $total3 += intval($dataItems[3]);
+            $total1 += intval($dataItems[self::CONT]);
+            $total2 += intval($dataItems[self::HOSP]);
+            $total3 += intval($dataItems[self::DESC]);
         }
         $data[] = "Totaal;{$total1};{$total2};{$total3}";
         return $data;
