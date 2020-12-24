@@ -1,0 +1,11 @@
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+th, td {
+    text-align: center
+}
+
+tr:nth-child(odd){background-color: azure}
+tr:nth-child(even){background-color: blanchedalmond}

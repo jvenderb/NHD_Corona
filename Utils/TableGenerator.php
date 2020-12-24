@@ -11,7 +11,7 @@ class TableGenerator
 {
     public function generateTable(array $headers, array $dataCSV): string
     {
-        $result = '<table style="border: 1px solid black">';
+        $result = '<table>';
         $result .= '<tr>';
         foreach ($headers as $header) {
             $result .= '<th>' . $header . '</th>';
@@ -21,7 +21,7 @@ class TableGenerator
             $cells = explode(';', $item);
             $result .= '<tr>';
             foreach ($cells as $cell) {
-                $result .= '<td style="align-content: center; border: 1px solid black">' . $cell . '</td>';
+                $result .= '<td style="align-content: center">' . $cell . '</td>';
             }
             $result .= '</tr>';
         }
