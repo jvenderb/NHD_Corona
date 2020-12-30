@@ -22,19 +22,17 @@ class Application
     private array $output;
     private bool $download;
     private DateTime $date;
-    private array $collectedData;
-    private bool $dayBefore;
+    private bool $addDayBefore;
     private TableGenerator $tableGenerator;
     private QueryProcessorCoronaNumbers $queryProcessor;
     private Config $config;
 
-    public function __construct(string $day, bool $download, bool $dayBefore )
+    public function __construct(string $day, bool $download, bool $addDayBefore )
     {
         $this->output = [];
         $this->download = $download;
         $this->date = new DateTime($day);
-        $this->dayBefore = $dayBefore;
-        $this->collectedData = [];
+        $this->addDayBefore = $addDayBefore;
         $this->tableGenerator = new TableGenerator();
         $this->queryProcessor = new QueryProcessorCoronaNumbers();
         $this->config = new Config();
@@ -60,7 +58,7 @@ class Application
         $this->output[] = 'Besmettingen per 100.000 is gebaseerd op het aantal inwoners op 29 september 2020.';
         $this->output[] = '<br>';
         $dataOfDate = $this->collectDataAndAddToTable($this->date);
-        if( $this->dayBefore ) {
+        if( $this->addDayBefore ) {
             $dayBefore = (new DateTime($this->date->format('d-m-Y')))->modify('-1 day');
             $dataOfDayBefore = $this->collectDataAndAddToTable($dayBefore);
             $this->output[] = '<em>De verschillen tussen ' . $this->date->format('d-m-Y') . ' en de vorige dag ('.$dayBefore->format('d-m-Y').')</em>';
@@ -104,15 +102,14 @@ class Application
             }
         }
         sort($changesPerCommunity);
-        $changesPerCommunity = $this->calculateTotals($changesPerCommunity);
+        $changesPerCommunity = $this->addTotals($changesPerCommunity);
         $this->output[] = $this->tableGenerator->generateTable($this->getTableHeadersDiff(), $changesPerCommunity);
     }
 
     private function downloadFile(): bool
     {
         $httpClient = new HttpClient($this->config->getDownloadUrl());
-        $httpClient->createDownloadFile($this->config->getDownloadFile());
-        return $httpClient->downloadAndWriteToFile();
+        return $httpClient->downloadAndWriteToFile($this->config->getDownloadFile());
     }
 
     public function getOutput(): array
@@ -143,7 +140,7 @@ class Application
             }
             $this->output[] = "<em>Regio {$groupName}:</em>";
             sort($dataByGroup);
-            $dataByGroup = $this->calculateTotals($dataByGroup);
+            $dataByGroup = $this->addTotals($dataByGroup);
             $this->output[] = $this->tableGenerator->generateTable($this->getTableHeadersData(), $dataByGroup);
         }
         return $extendedData;
@@ -154,7 +151,7 @@ class Application
         return intval($contamination / $citizens * 100000);
     }
 
-    private function calculateTotals( array $data ):array
+    private function addTotals(array $data ):array
     {
         $total1 = 0;
         $total2 = 0;
