@@ -17,10 +17,10 @@ require_once '/Users/jvenderb/phpStormProjects/NHD_Corona/Application/Config.php
 $download = isset($_POST['download']);
 $day = $_POST['day'] ?? '';
 $process = $_POST['process'] ?? false;
-$dayBefore = isset($_POST['daybefore']);
+$addDayBefore = isset($_POST['adddaybefore']);
 $html = '';
 if ($process) {
-    $app = new Application\Application($day, $download, $dayBefore);
+    $app = new Application\Application($day, $download, $addDayBefore);
     $app->processRequest($day);
     $messages = $app->getOutput();
     if ($messages) foreach ($messages as $message) {

@@ -23,14 +23,10 @@ class HttpClient
         $this->curlResource = curl_init($url);
     }
 
-    public function createDownloadFile(string $fileName)
-    {
-        $this->filePointer = fopen($fileName, "w");
-    }
-
-    public function downloadAndWriteToFile(): bool
+    public function downloadAndWriteToFile(string $fileName): bool
     {
         $result = true;
+        $this->filePointer = fopen($fileName, "w");
         curl_setopt($this->curlResource, CURLOPT_FILE, $this->filePointer);
         curl_setopt($this->curlResource, CURLOPT_HEADER, 0);
 
