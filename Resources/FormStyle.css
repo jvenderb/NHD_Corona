@@ -3,9 +3,12 @@ table, th, td {
     border-collapse: collapse;
 }
 
-th, td {
-    text-align: center
+th {
+    text-align: center;
 }
 
+td {
+    text-align: right;
+}
 tr:nth-child(odd){background-color: azure}
 tr:nth-child(even){background-color: blanchedalmond}
