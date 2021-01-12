@@ -19,6 +19,7 @@ class Application
     const HOSP = 2; // Hospital admission
     const DESC = 3; // Deceased
     const CPHD = 4; // Contamination per 100.000
+    const CITZ = 5; // Citizens per community
     private array $output;
     private bool $download;
     private DateTime $date;
@@ -76,12 +77,12 @@ class Application
 
     private function getTableHeadersData(): array
     {
-        return ['Gemeente', 'Besmettingen', 'Ziekenhuis Opn.', 'Cum. overleden', 'Besmettingen/100.000'];
+        return ['Gemeente', 'Besmettingen', 'Ziekenhuis Opn.', 'Cum. overleden', 'Besmettingen/100.000', 'Inwoners'];
     }
 
     private function getTableHeadersDiff(): array
     {
-        return ['Gemeente', ' Besmettingen', 'Opnames', 'Overlijden', 'Besmettingen/100.000'];
+        return ['Gemeente', ' Besmettingen', 'Opnames', 'Overlijden', 'Besmettingen/100.000', 'Inwoners'];
     }
 
     private function calculateDiff(array $dataOfDate, array $dataOfDayBefore)
@@ -97,7 +98,7 @@ class Application
                     $newDeath = intval($currentDayData[self::DESC]) - intval($dayBeforeData[self::DESC]);
                     $changePerHT = intval($currentDayData[self::CPHD]) - intval($dayBeforeData[self::CPHD]);
                     $changesPerCommunity[$currentDayData[self::COM]] =
-                        $currentDayData[self::COM] . ';' . strval($newTotal) . ';' . strval($newHospital) . ';' . strval($newDeath) . ';' . strval($changePerHT);
+                        $currentDayData[self::COM] . ';' . strval($newTotal) . ';' . strval($newHospital) . ';' . strval($newDeath) . ';' . strval($changePerHT). ';' . $dayBeforeData[self::CITZ];
                 }
             }
         }
@@ -133,6 +134,7 @@ class Application
                         $perHundredThousend = $this->calcContaminationPerHundredThousend(
                             intval($dataItems[self::CONT]), $citizensPerCommunity[$dataItems[self::COM]]);
                         $extendedDataLine = $dataLine.';'.strval($perHundredThousend);
+                        $extendedDataLine = $extendedDataLine.';'.strval( $citizensPerCommunity[$dataItems[self::COM]] );
                         $dataByGroup[$dataItems[self::COM]] = $extendedDataLine;
                         $extendedData[] = $extendedDataLine;
                     }
@@ -156,14 +158,16 @@ class Application
         $total1 = 0;
         $total2 = 0;
         $total3 = 0;
-        $total4 = '-';
+        $total5 = 0;
         foreach( $data as $dataLine) {
             $dataItems = explode(';', $dataLine);
             $total1 += intval($dataItems[self::CONT]);
             $total2 += intval($dataItems[self::HOSP]);
             $total3 += intval($dataItems[self::DESC]);
+            $total5 += intval($dataItems[self::CITZ]);
         }
-        $data[] = "Totaal;{$total1};{$total2};{$total3};{$total4}";
+        $total4 = $this->calcContaminationPerHundredThousend($total1, $total5);
+        $data[] = "Totaal;{$total1};{$total2};{$total3};{$total4};{$total5}";
         return $data;
     }
 }
