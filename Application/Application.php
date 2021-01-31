@@ -59,6 +59,10 @@ class Application
         $this->output[] = 'Besmettingen per 100.000 is gebaseerd op het aantal inwoners op 29 september 2020.';
         $this->output[] = '<br>';
         $dataOfDate = $this->collectDataAndAddToTable($this->date);
+        if( !$dataOfDate ) {
+            $this->output[] = 'Geen data gevonden voor: '.$this->date->format('d-m-Y');
+            return;
+        }
         if( $this->addDayBefore ) {
             $dayBefore = (new DateTime($this->date->format('d-m-Y')))->modify('-1 day');
             $dataOfDayBefore = $this->collectDataAndAddToTable($dayBefore);
@@ -150,6 +154,7 @@ class Application
 
     private function calcContaminationPerHundredThousend( int $contamination, int $citizens ): int
     {
+        $citizens = $citizens ? $citizens : 1;
         return intval($contamination / $citizens * 100000);
     }
 
