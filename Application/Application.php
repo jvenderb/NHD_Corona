@@ -73,10 +73,7 @@ class Application
 
     public function validInput(): bool
     {
-        if (!$this->date) {
-            return false;
-        }
-        return true;
+        return (bool)$this->date;
     }
 
     private function getTableHeadersData(): array
@@ -102,7 +99,7 @@ class Application
                     $newDeath = intval($currentDayData[self::DESC]) - intval($dayBeforeData[self::DESC]);
                     $changePerHT = intval($currentDayData[self::CPHD]) - intval($dayBeforeData[self::CPHD]);
                     $changesPerCommunity[$currentDayData[self::COM]] =
-                        $currentDayData[self::COM] . ';' . strval($newTotal) . ';' . strval($newHospital) . ';' . strval($newDeath) . ';' . strval($changePerHT). ';' . $dayBeforeData[self::CITZ];
+                        $currentDayData[self::COM] . ';' . $newTotal . ';' . $newHospital . ';' . $newDeath . ';' . $changePerHT . ';' . $dayBeforeData[self::CITZ];
                 }
             }
         }
@@ -137,14 +134,14 @@ class Application
                     if( in_array( $dataItems[self::COM], $communitiesByGroup )) {
                         $perHundredThousend = $this->calcContaminationPerHundredThousend(
                             intval($dataItems[self::CONT]), $citizensPerCommunity[$dataItems[self::COM]]);
-                        $extendedDataLine = $dataLine.';'.strval($perHundredThousend);
-                        $extendedDataLine = $extendedDataLine.';'.strval( $citizensPerCommunity[$dataItems[self::COM]] );
+                        $extendedDataLine = $dataLine.';'.$perHundredThousend;
+                        $extendedDataLine = $extendedDataLine.';'.$citizensPerCommunity[$dataItems[self::COM]];
                         $dataByGroup[$dataItems[self::COM]] = $extendedDataLine;
                         $extendedData[] = $extendedDataLine;
                     }
                 }
             }
-            $this->output[] = "<em>Regio {$groupName}:</em>";
+            $this->output[] = "<em>Regio $groupName:</em>";
             sort($dataByGroup);
             $dataByGroup = $this->addTotals($dataByGroup);
             $this->output[] = $this->tableGenerator->generateTable($this->getTableHeadersData(), $dataByGroup);
@@ -154,7 +151,7 @@ class Application
 
     private function calcContaminationPerHundredThousend( int $contamination, int $citizens ): int
     {
-        $citizens = $citizens ? $citizens : 1;
+        $citizens = $citizens ?: 1;
         return intval($contamination / $citizens * 100000);
     }
 
@@ -172,7 +169,7 @@ class Application
             $total5 += intval($dataItems[self::CITZ]);
         }
         $total4 = $this->calcContaminationPerHundredThousend($total1, $total5);
-        $data[] = "Totaal;{$total1};{$total2};{$total3};{$total4};{$total5}";
+        $data[] = "Totaal;$total1;$total2;$total3;$total4;$total5";
         return $data;
     }
 }

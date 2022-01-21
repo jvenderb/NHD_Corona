@@ -15,8 +15,6 @@ class HttpClient
 {
     /** @var resource */
     private $curlResource;
-    /** @var resource */
-    private $filePointer;
 
     public function __construct(string $url)
     {
@@ -26,17 +24,17 @@ class HttpClient
     public function downloadAndWriteToFile(string $fileName): bool
     {
         $result = true;
-        $this->filePointer = fopen($fileName, "w");
-        curl_setopt($this->curlResource, CURLOPT_FILE, $this->filePointer);
+        $filePointer = fopen($fileName, "w");
+        curl_setopt($this->curlResource, CURLOPT_FILE, $filePointer);
         curl_setopt($this->curlResource, CURLOPT_HEADER, 0);
 
         curl_exec($this->curlResource);
         if (curl_error($this->curlResource)) {
-            fwrite($this->filePointer, curl_error($this->curlResource));
+            fwrite($filePointer, curl_error($this->curlResource));
             $result = false;
         }
         curl_close($this->curlResource);
-        fclose($this->filePointer);
+        fclose($filePointer);
         return $result;
     }
 }
